@@ -1,0 +1,17 @@
+{
+  "cxxNamespace": ["nitrobackground"],
+  "ios": {
+    "iosModuleName": "NitroBackground"
+  },
+  "android": {
+    "androidNamespace": ["nfsmonstr","nitrobackground"],
+    "androidCxxLibName": "nitrobackground"
+  },
+  "autolinking": {
+    "NitroBackground": {
+      "swift": "NitroBackground",
+      "kotlin": "NitroBackground"
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
