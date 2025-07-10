@@ -50,14 +50,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/NFSMONSTR/nfsmonstr-react-native-nitro-background.git"
+    "url": "git+https://github.com/NFSMONSTR/react-native-nitro-background.git"
   },
   "author": "NFS_MONSTR <nfsmonstr@gmail.com> (https://github.com/NFSMONSTR)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/NFSMONSTR/nfsmonstr-react-native-nitro-background/issues"
   },
-  "homepage": "https://github.com/NFSMONSTR/nfsmonstr-react-native-nitro-background#readme",
+  "homepage": "https://github.com/NFSMONSTR/react-native-nitro-background#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
