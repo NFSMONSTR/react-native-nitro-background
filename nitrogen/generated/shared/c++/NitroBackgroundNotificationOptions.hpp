@@ -35,6 +35,9 @@ namespace margelo::nitro::nitrobackground {
    */
   struct NitroBackgroundNotificationOptions {
   public:
+    std::optional<std::string> channelName     SWIFT_PRIVATE;
+    std::optional<std::string> channelDescription     SWIFT_PRIVATE;
+    std::optional<std::string> channelId     SWIFT_PRIVATE;
     std::optional<std::string> taskTitle     SWIFT_PRIVATE;
     std::optional<std::string> taskDesc     SWIFT_PRIVATE;
     std::optional<TaskIconOptions> taskIcon     SWIFT_PRIVATE;
@@ -44,7 +47,7 @@ namespace margelo::nitro::nitrobackground {
 
   public:
     NitroBackgroundNotificationOptions() = default;
-    explicit NitroBackgroundNotificationOptions(std::optional<std::string> taskTitle, std::optional<std::string> taskDesc, std::optional<TaskIconOptions> taskIcon, std::optional<std::string> color, std::optional<std::string> linkingURI, std::optional<ProgressBarOptions> progressBar): taskTitle(taskTitle), taskDesc(taskDesc), taskIcon(taskIcon), color(color), linkingURI(linkingURI), progressBar(progressBar) {}
+    explicit NitroBackgroundNotificationOptions(std::optional<std::string> channelName, std::optional<std::string> channelDescription, std::optional<std::string> channelId, std::optional<std::string> taskTitle, std::optional<std::string> taskDesc, std::optional<TaskIconOptions> taskIcon, std::optional<std::string> color, std::optional<std::string> linkingURI, std::optional<ProgressBarOptions> progressBar): channelName(channelName), channelDescription(channelDescription), channelId(channelId), taskTitle(taskTitle), taskDesc(taskDesc), taskIcon(taskIcon), color(color), linkingURI(linkingURI), progressBar(progressBar) {}
   };
 
 } // namespace margelo::nitro::nitrobackground
@@ -59,6 +62,9 @@ namespace margelo::nitro {
     static inline NitroBackgroundNotificationOptions fromJSI(jsi::Runtime& runtime, const jsi::Value& arg) {
       jsi::Object obj = arg.asObject(runtime);
       return NitroBackgroundNotificationOptions(
+        JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, "channelName")),
+        JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, "channelDescription")),
+        JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, "channelId")),
         JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, "taskTitle")),
         JSIConverter<std::optional<std::string>>::fromJSI(runtime, obj.getProperty(runtime, "taskDesc")),
         JSIConverter<std::optional<TaskIconOptions>>::fromJSI(runtime, obj.getProperty(runtime, "taskIcon")),
@@ -69,6 +75,9 @@ namespace margelo::nitro {
     }
     static inline jsi::Value toJSI(jsi::Runtime& runtime, const NitroBackgroundNotificationOptions& arg) {
       jsi::Object obj(runtime);
+      obj.setProperty(runtime, "channelName", JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.channelName));
+      obj.setProperty(runtime, "channelDescription", JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.channelDescription));
+      obj.setProperty(runtime, "channelId", JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.channelId));
       obj.setProperty(runtime, "taskTitle", JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.taskTitle));
       obj.setProperty(runtime, "taskDesc", JSIConverter<std::optional<std::string>>::toJSI(runtime, arg.taskDesc));
       obj.setProperty(runtime, "taskIcon", JSIConverter<std::optional<TaskIconOptions>>::toJSI(runtime, arg.taskIcon));
@@ -82,6 +91,9 @@ namespace margelo::nitro {
         return false;
       }
       jsi::Object obj = value.getObject(runtime);
+      if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, "channelName"))) return false;
+      if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, "channelDescription"))) return false;
+      if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, "channelId"))) return false;
       if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, "taskTitle"))) return false;
       if (!JSIConverter<std::optional<std::string>>::canConvert(runtime, obj.getProperty(runtime, "taskDesc"))) return false;
       if (!JSIConverter<std::optional<TaskIconOptions>>::canConvert(runtime, obj.getProperty(runtime, "taskIcon"))) return false;

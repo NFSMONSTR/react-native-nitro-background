@@ -20,6 +20,9 @@ data class NitroBackgroundNotificationOptions
   @DoNotStrip
   @Keep
   constructor(
+    val channelName: String?,
+    val channelDescription: String?,
+    val channelId: String?,
     val taskTitle: String?,
     val taskDesc: String?,
     val taskIcon: TaskIconOptions?,

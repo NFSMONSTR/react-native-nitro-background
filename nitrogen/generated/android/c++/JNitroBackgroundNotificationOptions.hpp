@@ -36,6 +36,12 @@ namespace margelo::nitro::nitrobackground {
     [[nodiscard]]
     NitroBackgroundNotificationOptions toCpp() const {
       static const auto clazz = javaClassStatic();
+      static const auto fieldChannelName = clazz->getField<jni::JString>("channelName");
+      jni::local_ref<jni::JString> channelName = this->getFieldValue(fieldChannelName);
+      static const auto fieldChannelDescription = clazz->getField<jni::JString>("channelDescription");
+      jni::local_ref<jni::JString> channelDescription = this->getFieldValue(fieldChannelDescription);
+      static const auto fieldChannelId = clazz->getField<jni::JString>("channelId");
+      jni::local_ref<jni::JString> channelId = this->getFieldValue(fieldChannelId);
       static const auto fieldTaskTitle = clazz->getField<jni::JString>("taskTitle");
       jni::local_ref<jni::JString> taskTitle = this->getFieldValue(fieldTaskTitle);
       static const auto fieldTaskDesc = clazz->getField<jni::JString>("taskDesc");
@@ -49,6 +55,9 @@ namespace margelo::nitro::nitrobackground {
       static const auto fieldProgressBar = clazz->getField<JProgressBarOptions>("progressBar");
       jni::local_ref<JProgressBarOptions> progressBar = this->getFieldValue(fieldProgressBar);
       return NitroBackgroundNotificationOptions(
+        channelName != nullptr ? std::make_optional(channelName->toStdString()) : std::nullopt,
+        channelDescription != nullptr ? std::make_optional(channelDescription->toStdString()) : std::nullopt,
+        channelId != nullptr ? std::make_optional(channelId->toStdString()) : std::nullopt,
         taskTitle != nullptr ? std::make_optional(taskTitle->toStdString()) : std::nullopt,
         taskDesc != nullptr ? std::make_optional(taskDesc->toStdString()) : std::nullopt,
         taskIcon != nullptr ? std::make_optional(taskIcon->toCpp()) : std::nullopt,
@@ -65,6 +74,9 @@ namespace margelo::nitro::nitrobackground {
     [[maybe_unused]]
     static jni::local_ref<JNitroBackgroundNotificationOptions::javaobject> fromCpp(const NitroBackgroundNotificationOptions& value) {
       return newInstance(
+        value.channelName.has_value() ? jni::make_jstring(value.channelName.value()) : nullptr,
+        value.channelDescription.has_value() ? jni::make_jstring(value.channelDescription.value()) : nullptr,
+        value.channelId.has_value() ? jni::make_jstring(value.channelId.value()) : nullptr,
         value.taskTitle.has_value() ? jni::make_jstring(value.taskTitle.value()) : nullptr,
         value.taskDesc.has_value() ? jni::make_jstring(value.taskDesc.value()) : nullptr,
         value.taskIcon.has_value() ? JTaskIconOptions::fromCpp(value.taskIcon.value()) : nullptr,

@@ -11,6 +11,9 @@ interface ProgressBarOptions {
 }
 
 export interface NitroBackgroundNotificationOptions {
+  channelName?: string;
+  channelDescription?: string;
+  channelId?: string;
   taskTitle?: string;
   taskDesc?: string;
   taskIcon?: TaskIconOptions;

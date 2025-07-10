@@ -16,16 +16,18 @@ import androidx.core.app.NotificationCompat
 import com.facebook.react.HeadlessJsTaskService
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.jstasks.HeadlessJsTaskConfig
-import kotlin.math.floor
 
 
 class RNNitroBackgroundTask : HeadlessJsTaskService() {
+  private val TAG = "RNNitroBackgroundTask"
+  private var id: Int? = null
+
   @Nullable
   override fun getTaskConfig(intent: Intent?): HeadlessJsTaskConfig? {
-    val extras = intent!!.extras
+    val extras = intent?.extras
     if (extras != null) {
       return HeadlessJsTaskConfig(
-        extras.getString("taskName")!!,
+        intent.getStringExtra(TASK_KEY)!!,
         Arguments.fromBundle(extras),
         0,
         true
@@ -35,25 +37,33 @@ class RNNitroBackgroundTask : HeadlessJsTaskService() {
   }
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-    val extras = intent!!.extras
-    requireNotNull(extras) { "Extras cannot be null" }
+    val id = intent?.getIntExtra(SERVICE_ID, 0) ?: 0
+    this.id = id
+
+    val extras = intent?.getBundleExtra(NOTIFICATION_OPTIONS) ?: Bundle()
+
     val options = NitroBackgroundNotificationOptionsInternal(extras)
+
+
     createNotificationChannel(
-      options.taskTitle,
-      options.taskDesc
+          getUniqueChannelId(options.channelId),
+      options.channelName ?: options.taskTitle,
+      options.channelDescription ?: options.taskDesc
     ) // Necessary creating channel for API 26+
+
+
     // Create the notification
     val notification = buildNotification(this, options)
+    startForeground(id, notification)
 
-    startForeground(SERVICE_NOTIFICATION_ID, notification)
     return super.onStartCommand(intent, flags, startId)
   }
 
-  private fun createNotificationChannel(taskTitle: String, taskDesc: String) {
+  private fun createNotificationChannel(channelId: String, title: String, description: String) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val importance = NotificationManager.IMPORTANCE_LOW
-      val channel = NotificationChannel(CHANNEL_ID, taskTitle, importance)
-      channel.description = taskDesc
+      val channel = NotificationChannel(channelId, title, importance)
+      channel.description = description
       val notificationManager = getSystemService(
         NotificationManager::class.java
       )
@@ -62,8 +72,11 @@ class RNNitroBackgroundTask : HeadlessJsTaskService() {
   }
 
   companion object {
-    const val SERVICE_NOTIFICATION_ID: Int = 92901
-    private const val CHANNEL_ID = "RN_BACKGROUND_ACTIONS_CHANNEL"
+
+    private fun getUniqueChannelId(channelId: String): String {
+      return "RN_BACKGROUND_ACTIONS_CHANNEL_${channelId}"
+    }
+
 
     @SuppressLint("UnspecifiedImmutableFlag")
     fun buildNotification(context: Context, notificationOptions: NitroBackgroundNotificationOptionsInternal): Notification {
@@ -98,7 +111,8 @@ class RNNitroBackgroundTask : HeadlessJsTaskService() {
       } else {
         PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)
       }
-      val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+      val channelId = notificationOptions.channelId
+      val builder = NotificationCompat.Builder(context, getUniqueChannelId(channelId))
         .setContentTitle(taskTitle)
         .setContentText(taskDesc)
         .setSmallIcon(iconInt)

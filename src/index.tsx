@@ -8,11 +8,20 @@ const NitroBackgroundHybridObject =
 
 class NitroBackgroundService {
   private runningTasks: Set<string>;
+  private nativeTaskKeys: Record<string, string>;
+  private tasksCounter: number;
   private stopTasksPromises: Record<string, (arg?: any) => void>;
+  private notificationParams: Record<
+    string,
+    NitroBackgroundNotificationOptions
+  >;
 
   constructor() {
     this.runningTasks = new Set<string>();
     this.stopTasksPromises = {};
+    this.notificationParams = {};
+    this.nativeTaskKeys = {};
+    this.tasksCounter = 0;
   }
 
   private generateTask<T>(
@@ -47,15 +56,22 @@ class NitroBackgroundService {
     if (this.runningTasks.has(taskKey)) {
       return;
     }
-
+    this.tasksCounter++;
     const newTask = this.generateTask(taskKey, task, options?.parameters);
+    const nativeTaskKey = `${taskKey}-${this.tasksCounter}`;
+    const notificationOptions: NitroBackgroundNotificationOptions = {
+      ...(options?.notificationOptions ?? {}),
+      channelId: options?.notificationOptions?.channelId ?? taskKey,
+    };
     if (Platform.OS === 'android') {
-      AppRegistry.registerHeadlessTask(taskKey, () => newTask);
+      AppRegistry.registerHeadlessTask(nativeTaskKey, () => newTask);
+      this.notificationParams[taskKey] = notificationOptions;
     }
     this.runningTasks.add(taskKey);
+    this.nativeTaskKeys[taskKey] = nativeTaskKey;
     NitroBackgroundHybridObject.start(
-      taskKey,
-      options.notificationOptions,
+      nativeTaskKey,
+      notificationOptions,
       options.onExpire
     );
     if (Platform.OS === 'ios') {
@@ -71,14 +87,18 @@ class NitroBackgroundService {
       return;
     }
     if (!this.runningTasks.has(taskKey)) {
-      //todo error?
       return;
     }
-    //todo save notification options
-    NitroBackgroundHybridObject.updateNotification(
-      taskKey,
-      notificationOptions
-    );
+    if (!this.nativeTaskKeys[taskKey]) {
+      return;
+    }
+
+    const nativeTaskKey = this.nativeTaskKeys[taskKey];
+
+    NitroBackgroundHybridObject.updateNotification(nativeTaskKey, {
+      ...(this.notificationParams?.[taskKey] ?? {}),
+      ...notificationOptions,
+    });
   }
 
   public stop(taskKey: string) {
@@ -86,8 +106,15 @@ class NitroBackgroundService {
       this?.stopTasksPromises?.[taskKey]();
       delete this?.stopTasksPromises[taskKey];
     }
-    NitroBackgroundHybridObject.stop(taskKey);
+    if (taskKey in this.notificationParams) {
+      delete this.notificationParams[taskKey];
+    }
     if (this.runningTasks.has(taskKey)) {
+      const nativeTaskKey = this?.nativeTaskKeys[taskKey];
+      if (nativeTaskKey) {
+        NitroBackgroundHybridObject.stop(nativeTaskKey);
+        delete this.nativeTaskKeys[taskKey];
+      }
       this.runningTasks.delete(taskKey);
     }
   }
@@ -98,9 +125,14 @@ class NitroBackgroundService {
         this?.stopTasksPromises?.[taskKey]();
         delete this?.stopTasksPromises[taskKey];
       }
-      NitroBackgroundHybridObject.stop(taskKey);
+      const nativeTaskKey = this?.nativeTaskKeys[taskKey];
+      if (nativeTaskKey) {
+        NitroBackgroundHybridObject.stop(nativeTaskKey);
+      }
     }
     this.runningTasks.clear();
+    this.notificationParams = {};
+    this.nativeTaskKeys = {};
   }
 }
 

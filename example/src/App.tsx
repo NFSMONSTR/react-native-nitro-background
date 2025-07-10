@@ -21,14 +21,14 @@ const taskRandom = async (taskData: any) => {
       'geolocalization, etc. to keep your app alive in the background while you excute the JS from this library.'
     );
   }
-  await new Promise(async (resolve) => {
+  await new Promise(async (_) => {
     // For loop with a delay
-    const { delay, taskName } = taskData;
-    console.log(BackgroundService.isRunning(taskName), delay);
-    for (let i = 0; BackgroundService.isRunning(taskName); i++) {
-      console.log('Runned -> ', i);
-      BackgroundService.updateNotification(taskName, {
-        taskDesc: 'Runned -> ' + i,
+    const { delay, taskKey } = taskData;
+    console.log(BackgroundService.isRunning(taskKey), delay);
+    for (let i = 0; BackgroundService.isRunning(taskKey); i++) {
+      console.log(taskKey, ' Runned -> ', i);
+      BackgroundService.updateNotification(taskKey, {
+        taskTitle: taskKey + ' Runned -> ' + i,
       });
       await sleep(delay);
     }
@@ -37,35 +37,39 @@ const taskRandom = async (taskData: any) => {
 
 const options_1 = {
   notificationOptions: {
+    channelName: 'Task 1 channel',
+    channelDescription: 'Task 1 channel description',
     taskTitle: 'ExampleTask1 title',
     taskDesc: 'ExampleTask desc',
     taskIcon: {
       name: 'ic_launcher',
       type: 'mipmap',
     },
-    color: '#ff00ff',
+    color: '#00FF00',
     linkingURI: 'exampleScheme://chat/jane',
   },
   parameters: {
     delay: 1000,
-    taskName: TASK_1_NAME,
+    taskKey: TASK_1_NAME,
   },
 };
 
 const options_2 = {
   notificationOptions: {
+    channelName: 'Task 2 channel',
+    channelDescription: 'Task 2 channel description',
     taskTitle: 'ExampleTask2 title',
     taskDesc: 'ExampleTask desc',
     taskIcon: {
       name: 'ic_launcher',
       type: 'mipmap',
     },
-    color: '#ff00ff',
+    color: '#0000FF',
     linkingURI: 'exampleScheme://chat/jane',
   },
   parameters: {
     delay: 2000,
-    taskName: TASK_2_NAME,
+    taskKey: TASK_2_NAME,
   },
 };
 
@@ -98,10 +102,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        onPress={toggleBackground}
-        style={{ width: 100, height: 40 }}
-      >
+      <TouchableOpacity onPress={toggleBackground} style={styles.button}>
         <Text>{'Toggle'}</Text>
       </TouchableOpacity>
     </View>
@@ -114,5 +115,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#fff',
+  },
+  button: {
+    width: '60%',
+    height: 60,
+    borderRadius: 5,
+    backgroundColor: '#418c41',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

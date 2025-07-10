@@ -32,6 +32,13 @@ class NitroBackgroundNotificationOptionsInternal {
     } catch (e: Exception) {
       throw IllegalArgumentException("Task description cannot be null")
     }
+    //get Channel Id
+    try {
+      requireNotNull(options.channelId)
+      extras.putString("channelId", options.channelId)
+    } catch (e: Exception) {
+      throw IllegalArgumentException("channel id cannot be null")
+    }
     // Get iconInt
     try {
       val iconObject = options.taskIcon
@@ -70,9 +77,19 @@ class NitroBackgroundNotificationOptionsInternal {
       } catch (_: Exception) {
       }
     }
-
+    //Get linking uri
     if (options.linkingURI!==null) {
       extras.putString("linkingURI", options.linkingURI)
+    }
+
+    //Get channel name
+    if (options.channelName!= null) {
+      extras.putString("channelName", options.channelName)
+    }
+
+    //Get channel description
+    if (options.channelDescription!= null) {
+      extras.putString("channelDescription", options.channelDescription)
     }
   }
 
@@ -97,4 +114,13 @@ class NitroBackgroundNotificationOptionsInternal {
   @get:Nullable
   val progressBar: Bundle?
     get() = extras!!.getBundle("progressBar")
+  val channelId: String
+    get() = extras!!.getString("channelId", "")
+  @get:Nullable
+  val channelName: String?
+    get() = extras?.getString("channelName")
+
+  @get:Nullable
+  val channelDescription: String?
+    get() = extras?.getString("channelDescription")
 }

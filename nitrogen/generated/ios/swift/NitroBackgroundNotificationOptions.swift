@@ -18,8 +18,26 @@ public extension NitroBackgroundNotificationOptions {
   /**
    * Create a new instance of `NitroBackgroundNotificationOptions`.
    */
-  init(taskTitle: String?, taskDesc: String?, taskIcon: TaskIconOptions?, color: String?, linkingURI: String?, progressBar: ProgressBarOptions?) {
+  init(channelName: String?, channelDescription: String?, channelId: String?, taskTitle: String?, taskDesc: String?, taskIcon: TaskIconOptions?, color: String?, linkingURI: String?, progressBar: ProgressBarOptions?) {
     self.init({ () -> bridge.std__optional_std__string_ in
+      if let __unwrappedValue = channelName {
+        return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_std__string_ in
+      if let __unwrappedValue = channelDescription {
+        return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_std__string_ in
+      if let __unwrappedValue = channelId {
+        return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+      } else {
+        return .init()
+      }
+    }(), { () -> bridge.std__optional_std__string_ in
       if let __unwrappedValue = taskTitle {
         return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
       } else {
@@ -58,6 +76,75 @@ public extension NitroBackgroundNotificationOptions {
     }())
   }
 
+  var channelName: String? {
+    @inline(__always)
+    get {
+      return { () -> String? in
+        if let __unwrapped = self.__channelName.value {
+          return String(__unwrapped)
+        } else {
+          return nil
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__channelName = { () -> bridge.std__optional_std__string_ in
+        if let __unwrappedValue = newValue {
+          return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+        } else {
+          return .init()
+        }
+      }()
+    }
+  }
+  
+  var channelDescription: String? {
+    @inline(__always)
+    get {
+      return { () -> String? in
+        if let __unwrapped = self.__channelDescription.value {
+          return String(__unwrapped)
+        } else {
+          return nil
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__channelDescription = { () -> bridge.std__optional_std__string_ in
+        if let __unwrappedValue = newValue {
+          return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+        } else {
+          return .init()
+        }
+      }()
+    }
+  }
+  
+  var channelId: String? {
+    @inline(__always)
+    get {
+      return { () -> String? in
+        if let __unwrapped = self.__channelId.value {
+          return String(__unwrapped)
+        } else {
+          return nil
+        }
+      }()
+    }
+    @inline(__always)
+    set {
+      self.__channelId = { () -> bridge.std__optional_std__string_ in
+        if let __unwrappedValue = newValue {
+          return bridge.create_std__optional_std__string_(std.string(__unwrappedValue))
+        } else {
+          return .init()
+        }
+      }()
+    }
+  }
+  
   var taskTitle: String? {
     @inline(__always)
     get {
