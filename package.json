@@ -1,6 +1,6 @@
 {
   "name": "@nfsmonstr/react-native-nitro-background",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "React native background service library for running multiple background tasks almost forever in Android & iOS, powered by nitro modules",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
