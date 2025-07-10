@@ -8,19 +8,19 @@ const NitroBackgroundHybridObject =
 
 class NitroBackgroundService {
   private runningTasks: Set<string>;
-  private nativeTaskKeys: Record<string, string>;
-  private tasksCounter: number;
-  private stopTasksPromises: Record<string, (arg?: any) => void>;
-  private notificationParams: Record<
+  private tasksInfo: Record<
     string,
-    NitroBackgroundNotificationOptions
+    {
+      nativeKey?: string;
+      stopTaskPromise?: (arg?: any) => void;
+      notificationParams?: NitroBackgroundNotificationOptions;
+    }
   >;
+  private tasksCounter: number;
 
   constructor() {
     this.runningTasks = new Set<string>();
-    this.stopTasksPromises = {};
-    this.notificationParams = {};
-    this.nativeTaskKeys = {};
+    this.tasksInfo = {};
     this.tasksCounter = 0;
   }
 
@@ -32,7 +32,10 @@ class NitroBackgroundService {
     const self = this;
     return async () => {
       await new Promise<void>((resolve) => {
-        self.stopTasksPromises[taskKey] = resolve;
+        if (!self.tasksInfo?.[taskKey]) {
+          self.tasksInfo[taskKey] = {};
+        }
+        self.tasksInfo[taskKey].stopTaskPromise = resolve;
         task(parameters).then(() => {
           self.stop(taskKey);
         });
@@ -54,6 +57,7 @@ class NitroBackgroundService {
     }
   ): void {
     if (this.runningTasks.has(taskKey)) {
+      this.stop(taskKey);
       return;
     }
     this.tasksCounter++;
@@ -65,10 +69,15 @@ class NitroBackgroundService {
     };
     if (Platform.OS === 'android') {
       AppRegistry.registerHeadlessTask(nativeTaskKey, () => newTask);
-      this.notificationParams[taskKey] = notificationOptions;
     }
     this.runningTasks.add(taskKey);
-    this.nativeTaskKeys[taskKey] = nativeTaskKey;
+    if (!this.tasksInfo[taskKey]) {
+      this.tasksInfo[taskKey] = {};
+    }
+    this.tasksInfo[taskKey] = {
+      nativeKey: nativeTaskKey,
+      notificationParams: notificationOptions,
+    };
     NitroBackgroundHybridObject.start(
       nativeTaskKey,
       notificationOptions,
@@ -89,50 +98,51 @@ class NitroBackgroundService {
     if (!this.runningTasks.has(taskKey)) {
       return;
     }
-    if (!this.nativeTaskKeys[taskKey]) {
+    if (!this.tasksInfo[taskKey]?.nativeKey) {
       return;
     }
 
-    const nativeTaskKey = this.nativeTaskKeys[taskKey];
-
-    NitroBackgroundHybridObject.updateNotification(nativeTaskKey, {
-      ...(this.notificationParams?.[taskKey] ?? {}),
+    const nativeTaskKey = this.tasksInfo[taskKey]?.nativeKey;
+    this.tasksInfo[taskKey].notificationParams = {
+      ...(this.tasksInfo[taskKey].notificationParams ?? {}),
       ...notificationOptions,
-    });
+    };
+
+    NitroBackgroundHybridObject.updateNotification(
+      nativeTaskKey,
+      this.tasksInfo[taskKey].notificationParams
+    );
   }
 
   public stop(taskKey: string) {
-    if (this?.stopTasksPromises?.[taskKey]) {
-      this?.stopTasksPromises?.[taskKey]();
-      delete this?.stopTasksPromises[taskKey];
-    }
-    if (taskKey in this.notificationParams) {
-      delete this.notificationParams[taskKey];
+    const taskInfo = this.tasksInfo[taskKey];
+    if (taskInfo?.stopTaskPromise) {
+      taskInfo?.stopTaskPromise();
     }
     if (this.runningTasks.has(taskKey)) {
-      const nativeTaskKey = this?.nativeTaskKeys[taskKey];
+      const nativeTaskKey = taskInfo?.nativeKey;
       if (nativeTaskKey) {
         NitroBackgroundHybridObject.stop(nativeTaskKey);
-        delete this.nativeTaskKeys[taskKey];
       }
       this.runningTasks.delete(taskKey);
+    }
+    if (taskInfo) {
+      delete this.tasksInfo[taskKey];
     }
   }
 
   public stopAll() {
     for (const taskKey of this.runningTasks.keys()) {
-      if (this?.stopTasksPromises?.[taskKey]) {
-        this?.stopTasksPromises?.[taskKey]();
-        delete this?.stopTasksPromises[taskKey];
+      if (this.tasksInfo[taskKey]?.stopTaskPromise) {
+        this.tasksInfo[taskKey]?.stopTaskPromise();
       }
-      const nativeTaskKey = this?.nativeTaskKeys[taskKey];
+      const nativeTaskKey = this.tasksInfo[taskKey]?.nativeKey;
       if (nativeTaskKey) {
         NitroBackgroundHybridObject.stop(nativeTaskKey);
       }
     }
     this.runningTasks.clear();
-    this.notificationParams = {};
-    this.nativeTaskKeys = {};
+    this.tasksInfo = {};
   }
 }
 
